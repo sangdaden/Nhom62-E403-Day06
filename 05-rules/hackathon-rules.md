@@ -157,6 +157,6 @@ Dùng AI tools (Cursor, Copilot, v0) để code: **OK.** Nhưng phải hiểu ou
 
 ## Rời lớp Day 5, mỗi nhóm phải có
 
-1. Track đã chọn (VinFast / Vinmec / VinUni-VinSchool / Open)
+1. Track đã chọn (VinFast / Vinmec / VinUni-VinSchool / XanhSM / Open)
 2. Problem statement 1 câu: "Ai gặp vấn đề gì, hiện giải thế nào, AI giúp được gì"
 3. Phân công ai làm phần nào trong Canvas
