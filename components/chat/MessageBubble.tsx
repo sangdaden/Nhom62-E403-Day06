@@ -9,6 +9,7 @@ import { FeedbackButtons } from "./FeedbackButtons";
 import { MarkdownText } from "./MarkdownText";
 import { DoctorCardList } from "./DoctorCardList";
 import { SlotChipList } from "./SlotChipList";
+import { TypingDots } from "@/components/ui-vinmec/TypingDots";
 
 interface MessageBubbleProps {
   message: UIMessage;
@@ -111,9 +112,13 @@ function BotContent({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const richNode = renderToolOutput(name, (part as any).output, onSelectDoctor, onSelectSlot);
         if (richNode) {
-          // Defer to pass 2 — skip inline rendering
+          // Defer to pass 2 — show card after streaming
           richOutputs.push({ key: i, node: richNode });
-          return null;
+          // While streaming, show a "done" badge so tool call is always visible
+          if (isStreaming) {
+            return <ToolCallBadge key={i} toolName={name} state="done" />;
+          }
+          return null; // Card from richOutputs replaces badge when done
         }
       }
 
@@ -125,6 +130,23 @@ function BotContent({
     return null;
   });
 
+  // Show TypingDots when:
+  // 1. We are still streaming, AND
+  // 2. The last meaningful part is a completed tool call (agent is processing tool output)
+  //    OR the message has no text yet (agent hasn't started writing)
+  const meaningfulParts = message.parts.filter(
+    (p) => p.type !== "step-start" && p.type !== "reasoning"
+  );
+  const lastMeaningfulPart = meaningfulParts[meaningfulParts.length - 1];
+  const lastPartIsCompletedTool =
+    lastMeaningfulPart &&
+    isToolUIPart(lastMeaningfulPart) &&
+    lastMeaningfulPart.state === "output-available";
+  const hasNoTextYet = !message.parts.some(
+    (p) => isTextUIPart(p) && !!(p as { type: string; text?: string }).text
+  );
+  const showProcessingDots = isStreaming && (lastPartIsCompletedTool || hasNoTextYet);
+
   return (
     <div className="flex flex-col gap-2">
       {/* Text bubbles + running/error badges rendered first */}
@@ -133,6 +155,12 @@ function BotContent({
       {!isStreaming && richOutputs.map(({ key, node }) => (
         <div key={key}>{node}</div>
       ))}
+      {/* Typing dots: agent is processing tool result or thinking before first text */}
+      {showProcessingDots && (
+        <div className="bg-vinmec-primary-50 border border-vinmec-primary-light rounded-chat-bubble shadow-chat-bubble inline-block w-fit">
+          <TypingDots />
+        </div>
+      )}
     </div>
   );
 }

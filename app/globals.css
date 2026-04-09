@@ -89,7 +89,7 @@
 
   /* Mobile-first: max width container simulating phone frame on desktop */
   .phone-frame {
-    @apply mx-auto max-w-[480px] min-h-screen bg-vinmec-bg relative;
+    @apply mx-auto w-full max-w-[480px] min-h-screen bg-vinmec-bg relative;
   }
 
   /* Custom scrollbar */

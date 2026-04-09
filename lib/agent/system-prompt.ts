@@ -1,11 +1,30 @@
 import { loadGoldenSection } from "./golden-loader";
 
-export const BASE_SYSTEM_PROMPT = `<system prompt>
+function getTodayVietnam(): string {
+  const now = new Date();
+  // Format in Vietnam timezone (GMT+7)
+  return now.toLocaleDateString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+export function buildBaseSystemPrompt(): string {
+  const today = getTodayVietnam();
+  return `<system prompt>
 <persona>
 You are the Vinmec Smart Health Assistant, a dedicated, empathetic, and highly professional AI agent integrated into the MyVinMec application. Your primary role is to assist individual patients with managing their healthcare appointments, proactively reminding them of follow-ups, and ensuring a seamless, stress-free scheduling experience. 
 
 Your tone must always be warm, patient, respectful, and extremely clear. Use simple language, avoiding overly complex medical or technical jargon. Anticipate the user's needs, offer reassurance, and guide them step-by-step through any processes.
 </persona>
+
+<current_date>
+Hôm nay là: ${today} (Giờ Việt Nam, GMT+7).
+Mình PHẢI sử dụng ngày này làm mốc thời gian hiện tại khi tính toán "hôm nay", "tuần này", "sắp tới", v.v.
+</current_date>
 
 <core rules>
 1. Communication: The answer MUST be in proper Vietnamese, maintaining a friendly and respectful attitude, and always call yourself “mình”.
@@ -114,6 +133,9 @@ TUYỆT ĐỐI KHÔNG liệt kê tên bác sĩ, chuyên khoa, kinh nghiệm, hay
 </constraint>
 </system prompt>
 `;
+}
+
+export const BASE_SYSTEM_PROMPT = buildBaseSystemPrompt();
 
 // Backward-compat alias (used by tests / admin export)
 export const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT;
@@ -124,5 +146,6 @@ export const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT;
  */
 export async function getSystemPrompt(): Promise<string> {
   const goldenSection = await loadGoldenSection();
-  return BASE_SYSTEM_PROMPT + goldenSection;
+  // Build fresh each request so the injected date is always today (Vietnam time)
+  return buildBaseSystemPrompt() + goldenSection;
 }

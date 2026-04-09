@@ -8,12 +8,20 @@ export default tool({
     "Kiểm tra các khung giờ còn trống của một bác sĩ trong khoảng ngày xác định.",
   inputSchema: z.object({
     doctorId: z.string().describe("ID của bác sĩ"),
-    fromDate: z.string().describe("Ngày bắt đầu tìm kiếm, định dạng YYYY-MM-DD"),
+    fromDate: z.string().optional().describe("Ngày bắt đầu tìm kiếm, định dạng YYYY-MM-DD. Nếu không truyền, mặc định là ngày hôm nay (giờ Việt Nam)"),
     days: z.number().default(7).describe("Số ngày cần kiểm tra (mặc định 7)"),
   }),
   execute: async ({ doctorId, fromDate, days }) => {
+    // Always use Vietnam time (UTC+7) for "today"
+    const nowVN = new Date(Date.now() + 7 * 3600 * 1000);
+    const todayVN = nowVN.toISOString().slice(0, 10); // YYYY-MM-DD in VN time
+
+    // Use provided fromDate only if it's today or in the future; otherwise fall back to today
+    const resolvedFromDate =
+      fromDate && fromDate >= todayVN ? fromDate : todayVN;
+
     const now = new Date();
-    const start = new Date(fromDate);
+    const start = new Date(resolvedFromDate);
     start.setUTCHours(0, 0, 0, 0); // ← dùng UTC để tránh bug timezone
     const end = addDays(start, days);
 

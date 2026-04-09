@@ -169,7 +169,7 @@ export function MessageList({
             key={msg.id}
             message={msg}
             isLast={isLast}
-            isStreaming={isStreaming}
+            isStreaming={isLast && isStreaming}
             onActionClick={
               isInteractive ? onActionClick : undefined
             }
