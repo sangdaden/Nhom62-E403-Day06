@@ -19,7 +19,7 @@ export function ChatHeader({ onClose }: ChatHeaderProps) {
         <X size={20} className="text-white" />
       </button>
 
-      <VinmecLogo size={32} variant="light" />
+      <VinmecLogo size={32} />
 
       <div className="flex-1 min-w-0">
         <p className="text-white font-semibold text-base leading-tight truncate">

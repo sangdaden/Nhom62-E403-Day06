@@ -8,7 +8,7 @@ const MOCK_MESSAGES: UIMessage[] = [
     parts: [
       {
         type: "text",
-        text: "Xin chào! Em là trợ lý ảo VinmecCare. Bạn có thể hỏi em về lịch khám, triệu chứng sức khỏe, hoặc thông tin bệnh viện.",
+        text: "Xin chào! Mình là trợ lý ảo VinmecCare. Bạn có thể hỏi mình về lịch khám, triệu chứng sức khỏe, hoặc thông tin bệnh viện.",
       },
     ],
   },
@@ -21,7 +21,7 @@ const MOCK_MESSAGES: UIMessage[] = [
     id: "3",
     role: "assistant",
     parts: [
-      { type: "text", text: "Để giúp anh/chị tốt hơn, em sẽ tra cứu khoa phù hợp." },
+      { type: "text", text: "Để giúp anh/chị tốt hơn, mình sẽ tra cứu khoa phù hợp." },
       {
         type: "dynamic-tool",
         toolName: "recommend_department",
@@ -32,7 +32,7 @@ const MOCK_MESSAGES: UIMessage[] = [
       },
       {
         type: "text",
-        text: "Dựa trên triệu chứng đau bụng buồn nôn kéo dài 3 ngày, em gợi ý anh/chị khám tại **Khoa Tiêu hóa**. Anh/chị có muốn em kiểm tra lịch trống không?",
+        text: "Dựa trên triệu chứng đau bụng buồn nôn kéo dài 3 ngày, mình gợi ý anh/chị khám tại **Khoa Tiêu hóa**. Anh/chị có muốn mình kiểm tra lịch trống không?",
       },
     ],
   },
@@ -55,7 +55,7 @@ const MOCK_MESSAGES: UIMessage[] = [
       },
       {
         type: "text",
-        text: "Em tìm thấy lịch trống ngày mai tại Khoa Tiêu hóa:\n• 09:00 sáng\n• 10:30 sáng\n• 14:00 chiều\n\nAnh/chị muốn đặt lịch vào khung giờ nào? Anh có muốn em đặt lịch ngay không?",
+        text: "Mình tìm thấy lịch trống ngày mai tại Khoa Tiêu hóa:\n• 09:00 sáng\n• 10:30 sáng\n• 14:00 chiều\n\nBạn muốn đặt lịch vào khung giờ nào? Bạn có muốn mình đặt lịch ngay không?",
       },
     ],
   },

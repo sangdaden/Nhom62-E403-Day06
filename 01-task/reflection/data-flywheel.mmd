@@ -1,0 +1,30 @@
+flowchart TD
+    A[User chat] --> B[streamText\nresponse stream về user ngay]
+    B -->|fire-and-forget| C[Judge agent\nGPT-4o mini]
+    B --> D[User 👍/👎 optional\n+ note feedback]
+
+    C --> E[QualityScore table\n5 tiêu chí: đúng, an toàn, rõ ràng, hữu ích, đồng cảm]
+    D --> F[Feedback table\nrating, reason, query, response]
+    B --> N[Booking / tool outcome\nsuccess, drop-off, toolUsed]
+
+    E --> G{Auto promotion rule\nchạy mỗi 5 phút}
+    F --> G
+    N --> G
+
+    G -->|👍 and score >= 4\nand không có safety flag| H[GoldenExample table]
+    G -->|👎 hoặc score thấp| I[Negative patterns / avoid list]
+
+    H --> J[Golden examples loader\ncached, TTL 60s]
+    I --> J
+
+    J --> K[System prompt v_next\nTop 5 good examples\nTop 3 avoid patterns]
+    K --> L[Bot trả lời tốt hơn\njudge score cao hơn]
+    L --> M[Dashboard\nquality trend, feedback rate, booking success]
+    M --> A
+
+    style B fill:#dff7f2,stroke:#009688,stroke-width:2px
+    style C fill:#e8f0ff,stroke:#4a90e2,stroke-width:2px
+    style D fill:#fff4d6,stroke:#f0ad4e,stroke-width:2px
+    style H fill:#eafbea,stroke:#5cb85c,stroke-width:2px
+    style I fill:#fdeaea,stroke:#d9534f,stroke-width:2px
+    style K fill:#f3e8ff,stroke:#8e44ad,stroke-width:2px

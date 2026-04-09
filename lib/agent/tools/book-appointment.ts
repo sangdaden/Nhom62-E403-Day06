@@ -31,6 +31,17 @@ export default tool({
 
     const slotDate = new Date(scheduledAt);
 
+    // Server-side guard: reject slots outside working hours (07:00–20:00 Vietnam GMT+7)
+    const vnHour = (slotDate.getUTCHours() + 7) % 24; // convert UTC → VN hour
+    if (vnHour < 7 || vnHour >= 20) {
+      return {
+        success: false,
+        error: "OUTSIDE_WORKING_HOURS",
+        message:
+          "Vinmec chỉ nhận khám từ 07:00–20:00 hằng ngày. Vui lòng chọn slot trong khung giờ này.",
+      };
+    }
+
     // Check slot conflict
     const conflict = await prisma.appointment.findFirst({
       where: {

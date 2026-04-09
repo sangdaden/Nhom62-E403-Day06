@@ -25,7 +25,7 @@ export function LoginClient({ users }: LoginClientProps) {
 
       {/* Header */}
       <div className="bg-vinmec-primary px-6 pt-8 pb-10 flex flex-col items-center gap-3">
-        <VinmecLogo size={40} variant="light" />
+        <VinmecLogo size={40} />
         <p className="text-white/90 text-sm font-medium mt-1">
           Trợ lý ảo sức khỏe 24/7
         </p>

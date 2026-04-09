@@ -2,8 +2,9 @@ import { openai } from "@ai-sdk/openai";
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import type { UIMessage } from "ai";
 import { tools } from "@/lib/agent/tools";
-import { SYSTEM_PROMPT } from "@/lib/agent/system-prompt";
+import { getSystemPrompt } from "@/lib/agent/system-prompt";
 import { AGENT_CONFIG } from "@/lib/agent/config";
+import { scoreAsync } from "@/lib/agent/judge";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -79,10 +80,29 @@ export async function POST(req: Request) {
   // Inject ngày hiện tại VN (UTC+7) để agent biết hôm nay là ngày mấy
   const nowVN = new Date(Date.now() + 7 * 3600 * 1000);
   const todayVN = nowVN.toISOString().slice(0, 10); // YYYY-MM-DD
-  const systemWithUser = `${SYSTEM_PROMPT}\n\nNgày hôm nay (giờ Việt Nam): ${todayVN}\nUSER_ID hiện tại: ${userId}`;
+
+  // Load base prompt + golden examples (cached 60s)
+  const basePrompt = await getSystemPrompt();
+  const systemWithUser = `${basePrompt}\n\nNgày hôm nay (giờ Việt Nam): ${todayVN}\nUSER_ID hiện tại: ${userId}`;
 
   const normalized = normalizeMessages(messages);
   const modelMessages = await convertToModelMessages(normalized);
+
+  // Extract last user message for judge scoring
+  const lastUserMsg = [...messages]
+    .reverse()
+    .find((m): m is Record<string, unknown> => {
+      return typeof m === "object" && m !== null && (m as Record<string, unknown>).role === "user";
+    });
+  const userQuery =
+    typeof lastUserMsg?.content === "string"
+      ? lastUserMsg.content
+      : Array.isArray(lastUserMsg?.parts)
+      ? (lastUserMsg.parts as Array<{ type: string; text?: string }>)
+          .filter((p) => p.type === "text")
+          .map((p) => p.text ?? "")
+          .join("")
+      : "";
 
   const result = streamText({
     model: openai(AGENT_CONFIG.model),
@@ -95,6 +115,14 @@ export async function POST(req: Request) {
       console.error("[chat] stream error:", e);
     },
   });
+
+  // Fire-and-forget judge scoring after stream completes
+  Promise.all([result.text, result.toolCalls])
+    .then(([botText, calls]) => {
+      const toolNames = calls.map((c) => c.toolName);
+      scoreAsync(userId, userQuery, botText, toolNames);
+    })
+    .catch((e) => console.error("[chat] judge fire error:", e));
 
   return result.toUIMessageStreamResponse();
 }
