@@ -32,11 +32,16 @@ export function DoctorCard({
 
   return (
     <div
+      role={onSelect ? "button" : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onClick={onSelect}
+      onKeyDown={onSelect ? (e) => { if (e.key === "Enter" || e.key === " ") onSelect(); } : undefined}
       className={cn(
         "bg-white border border-vinmec-border rounded-xl p-3 shadow-card-soft",
         "flex items-start gap-3 transition-all duration-200",
         "hover:shadow-chat-bubble hover:-translate-y-0.5",
-        "animate-fade-in-up"
+        "animate-fade-in-up",
+        onSelect && "cursor-pointer hover:border-vinmec-primary/40 focus:outline-none focus:ring-2 focus:ring-vinmec-primary/30"
       )}
     >
       {/* Avatar */}
@@ -69,19 +74,16 @@ export function DoctorCard({
         </p>
       </div>
 
-      {/* Action */}
+      {/* Action badge — visual affordance only, click handled by card */}
       {onSelect && (
-        <button
-          onClick={onSelect}
+        <span
           className={cn(
-            "shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-lg",
-            "bg-vinmec-primary/10 text-vinmec-primary",
-            "hover:bg-vinmec-primary hover:text-white",
-            "transition-all duration-150"
+            "shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-lg pointer-events-none",
+            "bg-vinmec-primary/10 text-vinmec-primary"
           )}
         >
-          Xem lịch
-        </button>
+          Chọn ↗
+        </span>
       )}
     </div>
   );

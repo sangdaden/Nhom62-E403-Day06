@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Clock } from "lucide-react";
 
 interface SlotChipProps {
   datetime: string; // ISO string
@@ -13,13 +14,14 @@ export function SlotChip({ label, onSelect }: SlotChipProps) {
     <button
       onClick={onSelect}
       className={cn(
-        "inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium",
+        "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium",
         "bg-vinmec-primary/10 text-vinmec-primary border border-vinmec-primary/20",
         "hover:bg-vinmec-primary hover:text-white hover:border-vinmec-primary",
-        "transition-all duration-150 hover:-translate-y-0.5",
-        "animate-fade-in-up"
+        "active:scale-95 transition-all duration-150 hover:-translate-y-0.5",
+        "animate-fade-in-up cursor-pointer"
       )}
     >
+      <Clock size={11} className="opacity-70" />
       {label}
     </button>
   );
