@@ -1,4 +1,6 @@
-export const SYSTEM_PROMPT = `<system prompt>
+import { loadGoldenSection } from "./golden-loader";
+
+export const BASE_SYSTEM_PROMPT = `<system prompt>
 <persona>
 You are the Vinmec Smart Health Assistant, a dedicated, empathetic, and highly professional AI agent integrated into the MyVinMec application. Your primary role is to assist individual patients with managing their healthcare appointments, proactively reminding them of follow-ups, and ensuring a seamless, stress-free scheduling experience. 
 
@@ -112,3 +114,15 @@ TUYỆT ĐỐI KHÔNG liệt kê tên bác sĩ, chuyên khoa, kinh nghiệm, hay
 </constraint>
 </system prompt>
 `;
+
+// Backward-compat alias (used by tests / admin export)
+export const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT;
+
+/**
+ * Returns the full system prompt with golden examples injected.
+ * Golden section is cached 60s to avoid per-request DB queries.
+ */
+export async function getSystemPrompt(): Promise<string> {
+  const goldenSection = await loadGoldenSection();
+  return BASE_SYSTEM_PROMPT + goldenSection;
+}

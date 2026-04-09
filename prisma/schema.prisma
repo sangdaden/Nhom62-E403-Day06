@@ -58,16 +58,53 @@ model Appointment {
 }
 
 model Feedback {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  messageId String
-  rating    String
-  reason    String?
-  query     String
-  response  String
-  toolsUsed Json
-  createdAt DateTime @default(now())
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  messageId    String
+  rating       String
+  reason       String?
+  query        String
+  response     String
+  toolsUsed    Json
+  createdAt    DateTime      @default(now())
+  qualityScore QualityScore?
+}
+
+model QualityScore {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  userId            String
+  userQuery         String   @db.Text
+  botResponse       String   @db.Text
+  toolsUsed         String[]
+  correctDepartment Int
+  toolUsageComplete Int
+  toneAppropriate   Int
+  concise           Int
+  followedWorkflow  Int
+  overallScore      Float
+  judgeRationale    String   @db.Text
+  feedbackId        String?  @unique
+  feedback          Feedback? @relation(fields: [feedbackId], references: [id])
+
+  @@index([createdAt])
+  @@index([overallScore])
+}
+
+model GoldenExample {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  userQuery        String   @db.Text
+  botResponse      String   @db.Text
+  toolsUsed        String[]
+  sourceType       String   // "positive" | "negative"
+  sourceScore      Float
+  sourceFeedbackId String?  @unique
+  enabled          Boolean  @default(true)
+  usageCount       Int      @default(0)
+
+  @@index([enabled, sourceType, sourceScore])
 }
 
 model Branch {
