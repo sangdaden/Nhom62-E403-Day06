@@ -6,10 +6,26 @@ import { Clock } from "lucide-react";
 interface SlotChipProps {
   datetime: string; // ISO string
   label: string;    // formatted display e.g. "08:00"
-  onSelect: () => void;
+  onSelect?: () => void; // undefined = disabled (historical message)
 }
 
 export function SlotChip({ label, onSelect }: SlotChipProps) {
+  if (!onSelect) {
+    // Disabled / historical state — non-interactive
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium",
+          "bg-vinmec-surface text-vinmec-text-muted border border-vinmec-border",
+          "opacity-60 cursor-default select-none"
+        )}
+      >
+        <Clock size={11} className="opacity-50" />
+        {label}
+      </span>
+    );
+  }
+
   return (
     <button
       onClick={onSelect}

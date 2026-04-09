@@ -18,6 +18,8 @@ const SLOTS_PER_DAY = 6;
 
 function formatDateGroup(isoString: string): string {
   const d = new Date(isoString);
+  // Guard: if not a valid date, return the raw string as fallback
+  if (isNaN(d.getTime())) return isoString;
   // Lấy ngày/tháng/thứ theo giờ Việt Nam (GMT+7)
   const vnParts = new Intl.DateTimeFormat("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -39,6 +41,8 @@ function formatDateGroup(isoString: string): string {
 
 function formatTime(isoString: string): string {
   const d = new Date(isoString);
+  // Guard: if not a valid date, return the raw string as fallback
+  if (isNaN(d.getTime())) return isoString;
   // Hiển thị giờ theo múi giờ Việt Nam (GMT+7)
   return d.toLocaleTimeString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -88,7 +92,7 @@ export function SlotChipList({ slots, onSelectSlot }: SlotChipListProps) {
                   key={slot.datetime}
                   datetime={slot.datetime}
                   label={formatTime(slot.datetime)}
-                  onSelect={() => onSelectSlot?.(slot.datetime)}
+                  onSelect={onSelectSlot ? () => onSelectSlot(slot.datetime) : undefined}
                 />
               ))}
             </div>

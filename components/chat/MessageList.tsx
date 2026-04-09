@@ -65,6 +65,10 @@ export function MessageList({
     [lastAssistantId]
   );
 
+  // Track messages count to detect new messages (avoid object reference instability)
+  const msgCountRef = useRef(messages.length);
+  const isAtBottomRef = useRef(true);
+
   // Track if the scroll container is at the bottom
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef?.current;
@@ -72,8 +76,11 @@ export function MessageList({
     const threshold = 80; // px from bottom
     const atBottom =
       el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+    isAtBottomRef.current = atBottom;
     setIsAtBottom(atBottom);
-    if (atBottom) setHasNewMessage(false);
+    if (atBottom) {
+      setHasNewMessage((prev) => (prev ? false : prev));
+    }
   }, [scrollContainerRef]);
 
   // Attach scroll listener to the parent container
@@ -86,15 +93,19 @@ export function MessageList({
 
   // Auto-scroll logic: scroll to bottom only if user is already at bottom
   useEffect(() => {
-    if (isAtBottom) {
+    const newCount = messages.length;
+    const countChanged = newCount !== msgCountRef.current;
+    msgCountRef.current = newCount;
+
+    if (isAtBottomRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       setHasNewMessage(false);
-    } else {
-      // User has scrolled up — show new message indicator
+    } else if (countChanged) {
+      // User has scrolled up and new message arrived — show indicator
       setHasNewMessage(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages, isStreaming]);
+  }, [messages.length, isStreaming]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -150,6 +161,9 @@ export function MessageList({
           }
         }
 
+        // Only the last non-streaming assistant message has interactive labels
+        const isInteractive = msg.role === "assistant" && isLast && !isStreaming;
+
         return (
           <MessageBubble
             key={msg.id}
@@ -157,10 +171,10 @@ export function MessageList({
             isLast={isLast}
             isStreaming={isStreaming}
             onActionClick={
-              msg.role === "assistant" && isLast ? onActionClick : undefined
+              isInteractive ? onActionClick : undefined
             }
-            onSelectDoctor={msg.role === "assistant" ? onSelectDoctor : undefined}
-            onSelectSlot={msg.role === "assistant" ? onSelectSlot : undefined}
+            onSelectDoctor={isInteractive ? onSelectDoctor : undefined}
+            onSelectSlot={isInteractive ? onSelectSlot : undefined}
             showFeedback={showFeedback}
             query={feedbackQuery}
             toolsUsed={feedbackToolsUsed}
@@ -176,7 +190,7 @@ export function MessageList({
         </div>
       )}
       {showFollowups && (
-        <div className="pl-10">
+        <div className="flex justify-end">
           <SuggestedQuestions
             questions={followups}
             onPick={onSuggestionPick}

@@ -39,13 +39,19 @@ export function DoctorCard({
       className={cn(
         "bg-white border border-vinmec-border rounded-xl p-3 shadow-card-soft",
         "flex items-start gap-3 transition-all duration-200",
-        "hover:shadow-chat-bubble hover:-translate-y-0.5",
         "animate-fade-in-up",
-        onSelect && "cursor-pointer hover:border-vinmec-primary/40 focus:outline-none focus:ring-2 focus:ring-vinmec-primary/30"
+        onSelect
+          ? "cursor-pointer hover:shadow-chat-bubble hover:-translate-y-0.5 hover:border-vinmec-primary/40 focus:outline-none focus:ring-2 focus:ring-vinmec-primary/30"
+          : "opacity-60 cursor-default select-none"
       )}
     >
       {/* Avatar */}
-      <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-vinmec-primary to-vinmec-primary-dark flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+      <div className={cn(
+        "shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm",
+        onSelect
+          ? "bg-gradient-to-br from-vinmec-primary to-vinmec-primary-dark"
+          : "bg-vinmec-text-muted"
+      )}>
         {initials}
       </div>
 
@@ -74,7 +80,7 @@ export function DoctorCard({
         </p>
       </div>
 
-      {/* Action badge — visual affordance only, click handled by card */}
+      {/* Badge: only shown when interactive */}
       {onSelect && (
         <span
           className={cn(

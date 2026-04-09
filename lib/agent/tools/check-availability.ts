@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { generateSlots, addDays } from "@/lib/utils/datetime";
+import { generateSlots, addDays, formatVNDateTime } from "@/lib/utils/datetime";
 
 export default tool({
   description:
@@ -34,7 +34,7 @@ export default tool({
     console.log(`[check-availability] booked count=${booked.length}`);
 
     // Generate all possible slots
-    const availableSlots: { datetime: string; available: true }[] = [];
+    const availableSlots: { datetime: string; displayTime: string; available: true }[] = [];
     let current = new Date(start);
     let dayCount = 0;
 
@@ -49,7 +49,11 @@ export default tool({
           if (slot <= now) continue; // skip past slots
           const iso = slot.toISOString();
           if (!bookedTimes.has(iso)) {
-            availableSlots.push({ datetime: iso, available: true });
+            availableSlots.push({
+              datetime: iso,
+              displayTime: formatVNDateTime(slot), // giờ VN để AI dùng khi viết text
+              available: true,
+            });
             if (availableSlots.length >= 20) break;
           }
         }

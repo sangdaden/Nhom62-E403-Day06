@@ -63,13 +63,13 @@ export function SuggestedQuestions({
   // Inline chip variant
   return (
     <div
-      className="flex flex-col gap-2 animate-fade-in-up"
+      className="flex flex-col items-end gap-2 animate-fade-in-up"
       style={{ animationDelay: "100ms" }}
     >
-      <p className="text-xs text-vinmec-text-muted px-1">
+      <p className="text-xs text-vinmec-text-muted px-1 text-right">
         {title ?? "Gợi ý tiếp theo"}
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
         {questions.map((q, i) => (
           <button
             key={q}
@@ -81,7 +81,7 @@ export function SuggestedQuestions({
               "bg-vinmec-primary/5 hover:bg-vinmec-primary/10",
               "rounded-full text-xs font-medium",
               "transition-all duration-150 hover:-translate-y-0.5",
-              "animate-fade-in-up whitespace-normal text-left"
+              "animate-fade-in-up whitespace-normal text-right"
             )}
           >
             {q}

@@ -13,12 +13,12 @@ export function detectActions(text: string): DetectedAction[] {
     actions.push(
       {
         label: "Có, tiếp tục",
-        value: "Có, tiếp tục giúp em",
+        value: "Có, tiếp tục giúp tôi",
         variant: "primary",
       },
       {
         label: "Không, cảm ơn",
-        value: "Không, cảm ơn em",
+        value: "Không, cảm ơn tôi",
         variant: "secondary",
       }
     );
@@ -34,7 +34,7 @@ export function detectActions(text: string): DetectedAction[] {
       },
       {
         label: "Huỷ",
-        value: "Huỷ, em suy nghĩ thêm",
+        value: "Huỷ, tôi suy nghĩ thêm",
         variant: "secondary",
       }
     );

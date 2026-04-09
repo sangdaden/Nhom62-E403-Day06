@@ -1,3 +1,4 @@
+import React from "react";
 import type { UIMessage } from "ai";
 import { isTextUIPart, isToolUIPart, getToolName } from "ai";
 import { Avatar } from "@/components/ui-vinmec/Avatar";
@@ -47,60 +48,91 @@ function renderToolOutput(
   return null;
 }
 
+function hasRichToolPart(message: UIMessage): boolean {
+  return message.parts.some((part) => {
+    if (!isToolUIPart(part) || part.state !== "output-available") return false;
+    const name = getToolName(part);
+    const normalized = name.startsWith("tool-") ? name.slice(5) : name;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const out = (part as any).output;
+    if (normalized === "list_doctors") return Array.isArray(out);
+    if (normalized === "check_availability")
+      return out && typeof out === "object" && Array.isArray(out.slots);
+    return false;
+  });
+}
+
+/** When cards/chips are present, trim text to the intro sentence only.
+ *  Splits on blank line (\n\n) or a newline followed by a bullet/doctor name pattern. */
+function trimIntroText(text: string): string {
+  // Keep only the first paragraph (up to the first blank line)
+  const firstParagraph = text.split(/\n\n/)[0].trim();
+  return firstParagraph;
+}
+
 function BotContent({
   message,
+  isStreaming,
   onSelectDoctor,
   onSelectSlot,
 }: {
   message: UIMessage;
+  isStreaming?: boolean;
   onSelectDoctor?: (doctorId: string, doctorName: string) => void;
   onSelectSlot?: (datetime: string) => void;
 }) {
-  return (
-    <div className="flex flex-col gap-2">
-      {message.parts.map((part, i) => {
-        if (part.type === "step-start" || part.type === "reasoning") {
+  // Pre-scan: does this message have DoctorCardList / SlotChipList output?
+  const richPresent = hasRichToolPart(message);
+
+  // Collect rich outputs to render AFTER text
+  const richOutputs: { key: number; node: React.ReactNode }[] = [];
+
+  // Pass 1 — text bubbles + running/error tool badges only
+  const inlineContent = message.parts.map((part, i) => {
+    if (part.type === "step-start" || part.type === "reasoning") return null;
+
+    if (isTextUIPart(part)) {
+      if (!part.text) return null;
+      // When rich cards are present, only keep the intro sentence — discard listing
+      const displayText = richPresent ? trimIntroText(part.text) : part.text;
+      if (!displayText) return null;
+      return (
+        <div key={i} className="chat-bubble-bot text-sm leading-relaxed">
+          <MarkdownText>{displayText}</MarkdownText>
+        </div>
+      );
+    }
+
+    if (isToolUIPart(part)) {
+      const name = getToolName(part);
+      const s = part.state;
+
+      if (s === "output-available") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const richNode = renderToolOutput(name, (part as any).output, onSelectDoctor, onSelectSlot);
+        if (richNode) {
+          // Defer to pass 2 — skip inline rendering
+          richOutputs.push({ key: i, node: richNode });
           return null;
         }
+      }
 
-        if (isTextUIPart(part)) {
-          if (!part.text) return null;
-          return (
-            <div
-              key={i}
-              className="chat-bubble-bot text-sm leading-relaxed"
-            >
-              <MarkdownText>{part.text}</MarkdownText>
-            </div>
-          );
-        }
+      const badgeState =
+        s === "output-available" ? "done" : s === "output-error" ? "error" : "running";
+      return <ToolCallBadge key={i} toolName={name} state={badgeState} />;
+    }
 
-        if (isToolUIPart(part)) {
-          const name = getToolName(part);
-          const s = part.state;
-          const badgeState =
-            s === "output-available"
-              ? "done"
-              : s === "output-error"
-              ? "error"
-              : "running";
+    return null;
+  });
 
-          // For done state on specific tools, render rich cards instead of badge
-          if (s === "output-available") {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const richOutput = renderToolOutput(name, (part as any).output, onSelectDoctor, onSelectSlot);
-            if (richOutput) {
-              return <div key={i}>{richOutput}</div>;
-            }
-          }
-
-          return (
-            <ToolCallBadge key={i} toolName={name} state={badgeState} />
-          );
-        }
-
-        return null;
-      })}
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Text bubbles + running/error badges rendered first */}
+      {inlineContent}
+      {/* Rich UI cards/chips: only shown AFTER streaming is complete */}
+      {!isStreaming && richOutputs.map(({ key, node }) => (
+        <div key={key}>{node}</div>
+      ))}
     </div>
   );
 }
@@ -155,6 +187,7 @@ export function MessageBubble({
         </span>
         <BotContent
           message={message}
+          isStreaming={isStreaming}
           onSelectDoctor={onSelectDoctor}
           onSelectSlot={onSelectSlot}
         />
